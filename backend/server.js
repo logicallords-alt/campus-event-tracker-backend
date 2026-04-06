@@ -36,6 +36,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ─── Root Endpoint ──────────────────────────────────────────────────────────
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
+
 // ─── MongoDB Connection ──────────────────────────────────────────────────────
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/campuseventtracker';
 
@@ -72,7 +77,7 @@ app.use((req, res) => {
 });
 
 // ─── Start Server ────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
