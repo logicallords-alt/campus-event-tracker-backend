@@ -3,7 +3,7 @@ services:
     name: college-event-tracker-backend
     env: node
     rootDir: .
-    buildCommand: npm install && cd ../frontend && npm install && npm run build && cd ../backend && cp -r ../frontend/dist . || true
+    buildCommand: npm install && npm run build-frontend
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -16,4 +16,3 @@ services:
         sync: false
       - key: FRONTEND_URL
         value: https://campus-event-tracker-frontend.onrender.com
-
