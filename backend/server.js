@@ -95,7 +95,7 @@ app.use((err, req, res, next) => {
 // ─── SPA FALLBACK ROUTE (CRITICAL FOR PAGE RELOAD FIX) ───────────────────────
 // This route MUST be LAST - it catches all undefined routes and serves index.html
 // This allows the frontend router to handle all routes
-app.get('*', (req, res) => {
+app.use((req, res) => {
   // Don't serve index.html for API routes
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ message: 'API route not found' });
