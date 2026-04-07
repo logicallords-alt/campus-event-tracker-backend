@@ -28,7 +28,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight for all routes
+app.options('/{*path}', cors(corsOptions)); // Handle preflight for all routes (Express 5 syntax)
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '50mb' }));
@@ -101,8 +101,11 @@ app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // ─── 404 Handler for Unknown API Routes ──────────────────────────────────────
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ message: `API route not found: ${req.path}` });
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ message: `API route not found: ${req.path}` });
+  }
+  next();
 });
 
 // ─── Global Error Handler ─────────────────────────────────────────────────────
