@@ -31,7 +31,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// ─── Serve Static Files (Uploads) ────────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ─── IMPORTANT: Serve Frontend Static Files ─────────────────────────────────
+// This serves your built React/Vue/Angular app
+// The frontend is built to 'dist' folder by Render during build
+app.use(express.static(path.join(__dirname, 'dist')));
+console.log(`📁 Serving static files from: ${path.join(__dirname, 'dist')}`);
 
 // ─── Health Check Endpoint ───────────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -52,7 +59,7 @@ app.get('/api/health', (req, res) => {
 
 // ─── Root Endpoint ──────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // ─── MongoDB Connection ──────────────────────────────────────────────────────
@@ -71,6 +78,7 @@ mongoose.connect(mongoUri, {
 });
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
+// IMPORTANT: API routes must come BEFORE the SPA fallback route
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
@@ -84,9 +92,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── 404 Handler ─────────────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ message: `Route ${req.url} not found` });
+// ─── SPA FALLBACK ROUTE (CRITICAL FOR PAGE RELOAD FIX) ───────────────────────
+// This route MUST be LAST - it catches all undefined routes and serves index.html
+// This allows the frontend router to handle all routes
+app.get('*', (req, res) => {
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
+
+  // Serve index.html for ALL other routes (SPA routes)
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'), (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(500).json({ message: 'Error loading application' });
+    }
+  });
 });
 
 // ─── Start Server ────────────────────────────────────────────────────────────
@@ -95,6 +116,7 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📌 Frontend Allowed: ${corsOptions.origin}`);
+  console.log(`✅ SPA routing configured - page reloads will work correctly`);
 });
 
 // ─── Graceful Shutdown ───────────────────────────────────────────────────────
@@ -108,4 +130,3 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
-
