@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: college-event-tracker-backend
+    name: campus-event-tracker-backend
     env: node
     rootDir: .
-    buildCommand: npm install && npm run build
+    buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
