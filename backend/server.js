@@ -2,9 +2,26 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
+
+// ─── Verify Frontend Build Exists ───────────────────────────────────────────
+const distPath = path.join(__dirname, 'dist');
+const indexPath = path.join(distPath, 'index.html');
+
+if (!fs.existsSync(indexPath)) {
+  console.error(`❌ CRITICAL: Frontend build not found at ${indexPath}`);
+  console.error(`❌ dist/ directory exists: ${fs.existsSync(distPath)}`);
+  if (fs.existsSync(distPath)) {
+    console.error(`❌ Contents of dist/:`, fs.readdirSync(distPath));
+  }
+  console.error(`❌ Build frontend using: npm run build-frontend`);
+  console.error(`❌ Then restart the server`);
+} else {
+  console.log(`✅ Frontend build found at ${indexPath}`);
+}
 
 // ─── CORS Configuration ─────────────────────────────────────────────────────
 const corsOptions = {
@@ -102,10 +119,20 @@ app.use((req, res) => {
   }
 
   // Serve index.html for ALL other routes (SPA routes)
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'), (err) => {
+  const indexFile = path.join(__dirname, 'dist', 'index.html');
+  res.sendFile(indexFile, (err) => {
     if (err) {
-      console.error('Error serving index.html:', err);
-      res.status(500).json({ message: 'Error loading application' });
+      console.error(`❌ Failed to serve ${indexFile}: ${err.message}`);
+      console.error(`❌ File exists: ${fs.existsSync(indexFile)}`);
+      console.error(`❌ dist/ directory exists: ${fs.existsSync(path.join(__dirname, 'dist'))}`);
+      res.status(500).json({ 
+        message: 'Error loading application',
+        debug: process.env.NODE_ENV === 'development' ? {
+          distExists: fs.existsSync(path.join(__dirname, 'dist')),
+          indexExists: fs.existsSync(indexFile),
+          distPath: path.join(__dirname, 'dist')
+        } : undefined
+      });
     }
   });
 });
