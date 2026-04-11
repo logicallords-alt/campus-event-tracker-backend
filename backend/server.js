@@ -30,7 +30,16 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ─── Health Check Endpoint ───────────────────────────────────────────────────
+// ─── Health Check & Root Endpoints ──────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({ 
+    message: '🚀 Campus Event Tracker API is running', 
+    status: 'Healthy',
+    documentation: 'Use /api/auth, /api/events, etc. for API access',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
