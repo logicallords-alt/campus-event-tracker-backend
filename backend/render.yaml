@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: college-event-backend
+    name: campus-event-tracker-backend
     env: node
     plan: free
     rootDir: .
